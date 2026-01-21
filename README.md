@@ -1,4 +1,6 @@
-# 3D 임베드 테스트 (Vite + Babylon) - 모노레포
+# 3d-widget-web-host
+
+## 3D 임베드 테스트 (Vite + Babylon) - 모노레포
 
 이 저장소는 **3D 위젯(서버 A)** 과 **위젯을 임베드하는 호스트 웹(서버 B)** 을 분리해서,
 개발/배포 관점에서 “원격 모듈 임베드” 흐름을 테스트하기 위한 예시입니다.
@@ -26,4 +28,3 @@ npm run dev
 
 - 개발 중 임베드: `apps/web-host`에서 `import("http://localhost:5174/src/embed.ts")`
 - CORS: `apps/3d-widget/vite.config.ts` 에서 `server.cors = true`
-
