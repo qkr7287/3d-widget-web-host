@@ -64,6 +64,8 @@ export function disconnectWidget() {
 
 개발에서는 `.../src/embed.ts`를 바로 가져와도 되지만, 운영에서는 보통 **빌드 결과물(.js)** 을 정적 호스팅해서 가져오는 형태가 안전합니다.
 
+이 레포는 운영 빌드에서 위젯 쪽 산출물로 **`embed.js`를 고정 생성**하도록 설정되어 있습니다.
+
 ### 1) 위젯 앱에서 “진짜 엔트리”를 고정하기
 
 현재 위젯은 `src/embed.ts`에 `mountBabylon(canvas)`가 정의되어 있으니,
@@ -85,6 +87,12 @@ export function disconnectWidget() {
 ### 3) 호스트에서 원격 URL만 교체
 
 호스트 코드는 동일하고, `REMOTE_EMBED_URL`만 운영 URL로 바꿉니다.
+
+권장: 운영에서는 호스트에 `VITE_WIDGET_EMBED_URL`(Vite env)을 주입해 URL만 바꾸고 코드 변경은 최소화하세요.
+
+참고로 이 레포는 보안상 이유로 `.env*` 파일을 커밋하지 않고, 대신 예시 파일을 제공합니다:
+
+- `apps/web-host/env.example`
 
 ## 타입/계약(Contract) 권장
 

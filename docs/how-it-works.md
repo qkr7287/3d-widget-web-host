@@ -31,6 +31,10 @@ npm run dev
 
 - `http://localhost:5174/src/embed.ts`
 
+운영 배포 시나리오에서는 위젯을 빌드해서 **고정 URL**로 제공합니다.
+
+- `http://localhost:5174/embed.js` (예: `apps/3d-widget` 빌드 산출물)
+
 여기서 중요한 점:
 
 - Vite는 보통 `import("문자열")`을 빌드 타임에 분석하려고 합니다.
@@ -70,6 +74,8 @@ npm run dev
 - `server.cors = true`
 
 로 설정되어 있습니다.
+
+운영(정적 서빙) 시나리오를 로컬에서 테스트하기 위해, `vite preview`에서도 CORS 헤더를 추가했습니다.
 
 ## 페이지 구성(호스트)
 

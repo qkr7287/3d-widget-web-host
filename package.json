@@ -9,9 +9,11 @@
     "dev": "concurrently -n WIDGET,HOST -c magenta,cyan \"npm -w apps/3d-widget run dev\" \"npm -w apps/web-host run dev\"",
     "dev:widget": "npm -w apps/3d-widget run dev",
     "dev:host": "npm -w apps/web-host run dev",
-    "build": "npm -w apps/3d-widget run build && npm -w apps/web-host run build"
+    "build": "npm -w apps/3d-widget run build && npm -w apps/web-host run build",
+    "preview": "npm run build && concurrently -n WIDGET,HOST -c magenta,cyan \"npm -w apps/3d-widget run preview\" \"npm -w apps/web-host run preview\""
   },
   "devDependencies": {
+    "@types/node": "^25.0.9",
     "concurrently": "^9.2.0"
   }
 }

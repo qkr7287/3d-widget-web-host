@@ -4,12 +4,29 @@ type RemoteWidgetModule = {
   mountBabylon: (canvas: HTMLCanvasElement) => { dispose: () => void };
 };
 
-const REMOTE_EMBED_URL = "http://localhost:5174/src/embed.ts";
+const DEFAULT_DEV_EMBED_URL = "http://localhost:5174/src/embed.ts";
+const DEFAULT_PROD_EMBED_URL = "http://localhost:5174/embed.js";
+
+/**
+ * 원격 위젯 URL 결정 우선순위:
+ * 1) 쿼리스트링 ?widget=... (빠른 테스트/임시 교체)
+ * 2) 환경변수 VITE_WIDGET_EMBED_URL (dev/prod 빌드별 설정)
+ * 3) 모드별 기본값(dev: src/embed.ts, prod: embed.js)
+ */
+const REMOTE_EMBED_URL =
+  new URLSearchParams(window.location.search).get("widget") ??
+  import.meta.env.VITE_WIDGET_EMBED_URL ??
+  (import.meta.env.DEV ? DEFAULT_DEV_EMBED_URL : DEFAULT_PROD_EMBED_URL);
 
 const btnConnect = document.getElementById("btn-connect") as HTMLButtonElement;
 const btnDisconnect = document.getElementById("btn-disconnect") as HTMLButtonElement;
 const statusEl = document.getElementById("status") as HTMLDivElement;
 const canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
+const remoteUrlEl = document.getElementById("remote-url") as HTMLSpanElement | null;
+
+if (remoteUrlEl) {
+  remoteUrlEl.textContent = REMOTE_EMBED_URL;
+}
 
 function setStatus(text: string, kind: "info" | "error" = "info") {
   statusEl.textContent = text;
