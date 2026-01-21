@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web Host - 3D 임베드 테스트</title>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="title">
+      <div class="title__main">Web Host (5173)</div>
+      <div class="title__sub">
+        아래 캔버스는 <span class="mono">http://localhost:5174/src/embed.ts</span> 모듈을 원격 import 해서 렌더링합니다.
+      </div>
+    </div>
+    <div class="actions">
+      <button id="btn-connect" class="btn">연결(임베드)</button>
+      <button id="btn-disconnect" class="btn btn--secondary" disabled>해제(Dispose)</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="canvasPanel">
+      <canvas id="renderCanvas"></canvas>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>

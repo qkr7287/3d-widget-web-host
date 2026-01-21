@@ -1,0 +1,17 @@
+{
+  "name": "cicdtest-3d-embed-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n WIDGET,HOST -c magenta,cyan \"npm -w apps/3d-widget run dev\" \"npm -w apps/web-host run dev\"",
+    "dev:widget": "npm -w apps/3d-widget run dev",
+    "dev:host": "npm -w apps/web-host run dev",
+    "build": "npm -w apps/3d-widget run build && npm -w apps/web-host run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0"
+  }
+}
