@@ -10,6 +10,7 @@
 - 작동 방식: `docs/how-it-works.md`
 - 다른 프로젝트 적용 가이드: `docs/integration-guide.md`
 - 운영 배포 시나리오: `docs/production-deployment.md`
+- 호스팅 방식 비교(통합 vs 분리/CDN): `docs/hosting-tradeoffs.md`
 
 ## 앱 구성
 
