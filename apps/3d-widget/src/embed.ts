@@ -12,6 +12,16 @@ export type BabylonWidgetController = {
   dispose: () => void;
 };
 
+type WidgetGlobal = {
+  mountBabylon?: typeof mountBabylon;
+};
+
+function registerGlobalMount() {
+  const g = globalThis as unknown as { __3D_WIDGET__?: WidgetGlobal };
+  if (!g.__3D_WIDGET__) g.__3D_WIDGET__ = {};
+  g.__3D_WIDGET__.mountBabylon = mountBabylon;
+}
+
 function computeWorldBounds(meshes: BABYLON.AbstractMesh[]) {
   let min = new BABYLON.Vector3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
   let max = new BABYLON.Vector3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
@@ -186,3 +196,5 @@ export function mountBabylon(canvas: HTMLCanvasElement): BabylonWidgetController
   };
 }
 
+// 운영 빌드(embed.js)가 named export를 보존하지 못하는 환경에서도 host가 접근할 수 있도록 global에 등록
+registerGlobalMount();

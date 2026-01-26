@@ -61,8 +61,19 @@ async function connectOnce() {
     // 중요: Vite가 빌드 타임에 URL을 해석하려고 하지 않도록 @vite-ignore 사용
     const mod = (await import(/* @vite-ignore */ REMOTE_EMBED_URL)) as RemoteWidgetModule;
 
+    // prod 빌드(embed.js)가 named export를 보존하지 못하는 환경에서도 동작하도록 global fallback 지원
+    const globalMount =
+      (globalThis as unknown as { __3D_WIDGET__?: { mountBabylon?: RemoteWidgetModule["mountBabylon"] } }).__3D_WIDGET__
+        ?.mountBabylon;
+    const mount = typeof mod.mountBabylon === "function" ? mod.mountBabylon : globalMount;
+    if (typeof mount !== "function") {
+      throw new Error(
+        `mountBabylon을 찾을 수 없습니다. embed.js가 ESM export를 제공하지 않을 수 있습니다. (REMOTE_EMBED_URL=${REMOTE_EMBED_URL})`,
+      );
+    }
+
     const pageStart = getPageStartNow();
-    const mounted = mod.mountBabylon(canvas);
+    const mounted = mount(canvas);
     controller = { dispose: mounted.dispose };
     readyPromise = mounted.ready;
     btnDisconnect.disabled = false;
