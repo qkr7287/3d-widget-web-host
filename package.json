@@ -9,6 +9,8 @@
     "dev": "concurrently -n WIDGET,HOST -c magenta,cyan \"npm -w apps/3d-widget run dev\" \"npm -w apps/web-host run dev\"",
     "dev:widget": "npm -w apps/3d-widget run dev",
     "dev:host": "npm -w apps/web-host run dev",
+    "dev:combined": "npm -w apps/combined-app run dev",
+    "dev:compare": "concurrently -n WIDGET,HOST,COMBINED -c magenta,cyan,yellow \"npm -w apps/3d-widget run dev\" \"npm -w apps/web-host run dev\" \"npm -w apps/combined-app run dev\"",
     "build": "npm -w apps/3d-widget run build && npm -w apps/web-host run build",
     "preview": "npm run build && concurrently -n WIDGET,HOST -c magenta,cyan \"npm -w apps/3d-widget run preview\" \"npm -w apps/web-host run preview\""
   },

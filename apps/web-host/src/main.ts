@@ -1,7 +1,7 @@
 import "./style.css";
 
 type RemoteWidgetModule = {
-  mountBabylon: (canvas: HTMLCanvasElement) => { dispose: () => void };
+  mountBabylon: (canvas: HTMLCanvasElement) => { dispose: () => void; ready: Promise<void> };
 };
 
 const DEFAULT_DEV_EMBED_URL = "http://localhost:5174/src/embed.ts";
@@ -34,22 +34,35 @@ function setStatus(text: string, kind: "info" | "error" = "info") {
 }
 
 let controller: { dispose: () => void } | null = null;
+let readyPromise: Promise<void> | null = null;
 
 function sleep(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, ms));
 }
 
+function getPageStartNow() {
+  const anyWindow = window as unknown as { __PAGE_START?: number };
+  return typeof anyWindow.__PAGE_START === "number" ? anyWindow.__PAGE_START : performance.now();
+}
+
 async function connectOnce() {
   try {
-    setStatus("원격 3D 위젯 로딩 중...");
+    setStatus("원격 3D 위젯 로딩 중...(모듈 import)");
     btnConnect.disabled = true;
 
     // 중요: Vite가 빌드 타임에 URL을 해석하려고 하지 않도록 @vite-ignore 사용
     const mod = (await import(/* @vite-ignore */ REMOTE_EMBED_URL)) as RemoteWidgetModule;
 
-    controller = mod.mountBabylon(canvas);
+    const pageStart = getPageStartNow();
+    const mounted = mod.mountBabylon(canvas);
+    controller = { dispose: mounted.dispose };
+    readyPromise = mounted.ready;
     btnDisconnect.disabled = false;
-    setStatus(`임베드 성공: ${REMOTE_EMBED_URL}`);
+    setStatus(`임베드 성공: ${REMOTE_EMBED_URL}\n3D 준비 중...(GLB 로드 + scene 안정화)`);
+
+    await readyPromise;
+    const ms = performance.now() - pageStart;
+    setStatus(`로딩 완료(안정화): ${ms.toFixed(0)} ms\n(기준: 웹 진입 순간 → GLB 로드 + scene ready + 프레임 안정화)`);
   } catch (e) {
     btnConnect.disabled = false;
     btnDisconnect.disabled = true;
@@ -79,6 +92,7 @@ function disconnect() {
     controller?.dispose();
   } finally {
     controller = null;
+    readyPromise = null;
     btnConnect.disabled = false;
     btnDisconnect.disabled = true;
     setStatus("해제 완료(Dispose). 다시 연결을 눌러주세요.");

@@ -109,6 +109,7 @@ body {
 }
 
 .status {
+  white-space: pre-line;
   position: absolute;
   left: 12px;
   bottom: 12px;

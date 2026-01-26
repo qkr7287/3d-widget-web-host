@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Combined App (6000) - 로딩타임 테스트</title>
+    <script>
+      // "웹에 들어간 순간" 기준점(로딩타임 측정)
+      window.__PAGE_START = performance.now();
+    </script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="title">
+        <div class="title__main">Combined App (6000)</div>
+        <div class="title__sub">
+          이 페이지는 <span class="mono">로컬 import</span>로 3D 위젯 코드를 직접 실행합니다(원격 모듈 import 없음).
+        </div>
+      </div>
+      <div class="actions">
+        <button id="btn-mount" class="btn">마운트</button>
+        <button id="btn-unmount" class="btn btn--secondary" disabled>언마운트(Dispose)</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="canvasPanel">
+        <canvas id="renderCanvas"></canvas>
+        <div id="status" class="status" role="status" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
+
