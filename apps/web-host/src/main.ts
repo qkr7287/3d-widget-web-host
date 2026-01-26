@@ -18,13 +18,13 @@ const DEFAULT_PROD_EMBED_URL = `${WIDGET_PROTOCOL}://${WIDGET_HOST}:${WIDGET_POR
 /**
  * 원격 위젯 URL 결정 우선순위:
  * 1) 쿼리스트링 ?widget=... (빠른 테스트/임시 교체)
- * 2) 환경변수 VITE_WIDGET_EMBED_URL (dev/prod 빌드별 설정)
+ * 2) dev-config.ts의 WIDGET_EMBED_URL_OVERRIDE (옵션)
  * 3) 모드별 기본값(dev: src/embed.ts, prod: embed.js)
  */
+const WIDGET_OVERRIDE_URL = (__WIDGET_EMBED_URL_OVERRIDE__ ?? "").trim();
 const REMOTE_EMBED_URL =
   new URLSearchParams(window.location.search).get("widget") ??
-  (__WIDGET_EMBED_URL_OVERRIDE__ || "") ??
-  (import.meta.env.DEV ? DEFAULT_DEV_EMBED_URL : DEFAULT_PROD_EMBED_URL);
+  (WIDGET_OVERRIDE_URL || (import.meta.env.DEV ? DEFAULT_DEV_EMBED_URL : DEFAULT_PROD_EMBED_URL));
 
 const btnConnect = document.getElementById("btn-connect") as HTMLButtonElement;
 const btnDisconnect = document.getElementById("btn-disconnect") as HTMLButtonElement;
