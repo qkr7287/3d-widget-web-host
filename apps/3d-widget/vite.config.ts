@@ -1,17 +1,21 @@
 import { defineConfig } from "vite";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
+import { DEV_SERVER_HOST, PORT_3D_WIDGET } from "../../config/dev-config";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   server: {
-    port: 5174,
+    // 기본값: LAN(다른 기기)에서 http://192.168.x.x:5174 로 접속 가능
+    host: DEV_SERVER_HOST,
+    port: PORT_3D_WIDGET,
     strictPort: true,
     cors: true,
   },
   preview: {
-    port: 5174,
+    host: DEV_SERVER_HOST,
+    port: PORT_3D_WIDGET,
     strictPort: true,
     headers: {
       // 운영(정적 서빙) 시나리오를 로컬에서 시뮬레이션할 때도 cross-origin import가 가능하도록

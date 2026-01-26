@@ -4,8 +4,16 @@ type RemoteWidgetModule = {
   mountBabylon: (canvas: HTMLCanvasElement) => { dispose: () => void; ready: Promise<void> };
 };
 
-const DEFAULT_DEV_EMBED_URL = "http://localhost:5174/src/embed.ts";
-const DEFAULT_PROD_EMBED_URL = "http://localhost:5174/embed.js";
+/**
+ * "원격 위젯 주소"를 수정하기 쉽게 "루트 config/dev-config.ts" 기반으로 구성.
+ * (vite.config.ts에서 __WIDGET_* 상수로 주입)
+ */
+const WIDGET_PROTOCOL = __WIDGET_PROTOCOL__ || "http";
+const WIDGET_HOST = __WIDGET_HOST__ || window.location.hostname || "localhost";
+const WIDGET_PORT = Number(__WIDGET_PORT__ || 5174);
+
+const DEFAULT_DEV_EMBED_URL = `${WIDGET_PROTOCOL}://${WIDGET_HOST}:${WIDGET_PORT}/src/embed.ts`;
+const DEFAULT_PROD_EMBED_URL = `${WIDGET_PROTOCOL}://${WIDGET_HOST}:${WIDGET_PORT}/embed.js`;
 
 /**
  * 원격 위젯 URL 결정 우선순위:
@@ -15,7 +23,7 @@ const DEFAULT_PROD_EMBED_URL = "http://localhost:5174/embed.js";
  */
 const REMOTE_EMBED_URL =
   new URLSearchParams(window.location.search).get("widget") ??
-  import.meta.env.VITE_WIDGET_EMBED_URL ??
+  (__WIDGET_EMBED_URL_OVERRIDE__ || "") ??
   (import.meta.env.DEV ? DEFAULT_DEV_EMBED_URL : DEFAULT_PROD_EMBED_URL);
 
 const btnConnect = document.getElementById("btn-connect") as HTMLButtonElement;

@@ -14,12 +14,14 @@
 
 ## 앱 구성
 
-- `apps/3d-widget` (포트 5174)
+- `apps/3d-widget` (기본 포트 5174)
   - Babylon.js 위젯
   - `src/embed.ts` 에 `mountBabylon(canvas)` 를 export
-- `apps/web-host` (포트 5173)
+- `apps/web-host` (기본 포트 5173)
   - 호스트 웹앱
-  - `http://localhost:5174/src/embed.ts` 를 원격 import 해서 캔버스에 mount
+  - `3d-widget`의 `src/embed.ts`(DEV) 또는 `embed.js`(PROD)를 import 해서 캔버스에 mount
+- `apps/combined-app` (기본 포트 6100)
+  - 로딩타임 비교용 “결합 앱”(원격 import 없이 로컬 import로 위젯 실행)
 
 ## 실행
 
@@ -30,8 +32,13 @@ npm run dev
 
 - Host: `http://localhost:5173`
 - Widget(standalone): `http://localhost:5174`
+- Combined: `http://localhost:6100`
+
+## 포트/호스트/위젯 주소를 쉽게 바꾸는 법(중요)
+
+**루트 `config/dev-config.ts` 한 파일만 수정**하면 3개 앱의 포트/호스트와 web-host가 가져올 위젯 기본 주소가 같이 바뀝니다.
 
 ## 포인트
 
-- 개발 중 임베드: `apps/web-host`에서 `import("http://localhost:5174/src/embed.ts")`
+- 개발 중 임베드: `apps/web-host`에서 원격 `import("http://<WIDGET_HOST>:5174/src/embed.ts")`
 - CORS: `apps/3d-widget/vite.config.ts` 에서 `server.cors = true`
