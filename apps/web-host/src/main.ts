@@ -53,13 +53,43 @@ function getPageStartNow() {
   return typeof anyWindow.__PAGE_START === "number" ? anyWindow.__PAGE_START : performance.now();
 }
 
+function recordStep(stepIndex: number): void {
+  const elapsed = Math.round(performance.now() - getPageStartNow());
+  const el = document.getElementById(`step-${stepIndex}`);
+  if (!el) return;
+  const msSpan = el.querySelector(".loadTimeline__ms");
+  if (msSpan) msSpan.textContent = `${elapsed} ms`;
+  el.classList.add("loadTimeline__step--done");
+}
+
+function resetTimeline(): void {
+  // 2~6만 초기화. 1(host 앱 로드)은 페이지 로드 시 한 번만 기록되어 유지.
+  for (let i = 2; i <= 6; i += 1) {
+    const el = document.getElementById(`step-${i}`);
+    if (!el) continue;
+    el.classList.remove("loadTimeline__step--done");
+    const msSpan = el.querySelector(".loadTimeline__ms");
+    if (msSpan) msSpan.textContent = "—";
+  }
+}
+
+// 1. host 앱 로드 완료 시점 기록 (main.ts·style·Vite 청크 실행 직후)
+recordStep(1);
+
 async function connectOnce() {
   try {
     setStatus("원격 3D 위젯 로딩 중...(모듈 import)");
     btnConnect.disabled = true;
 
+    // 2. 자동 연결 시작
+    recordStep(2);
+
     // 중요: Vite가 빌드 타임에 URL을 해석하려고 하지 않도록 @vite-ignore 사용
     const mod = (await import(/* @vite-ignore */ REMOTE_EMBED_URL)) as RemoteWidgetModule;
+
+    // 3·4. 원격 모듈 로드 완료 (embed + 의존성 동시 완료)
+    recordStep(3);
+    recordStep(4);
 
     // prod 빌드(embed.js)가 named export를 보존하지 못하는 환경에서도 동작하도록 global fallback 지원
     const globalMount =
@@ -74,12 +104,20 @@ async function connectOnce() {
 
     const pageStart = getPageStartNow();
     const mounted = mount(canvas);
+
+    // 5. mount 실행 완료 (GLB·env 요청 시작됨)
+    recordStep(5);
+
     controller = { dispose: mounted.dispose };
     readyPromise = mounted.ready;
     btnDisconnect.disabled = false;
     setStatus(`임베드 성공: ${REMOTE_EMBED_URL}\n3D 준비 중...(GLB 로드 + scene 안정화)`);
 
     await readyPromise;
+
+    // 6. ready 종료 (프레임 안정화 완료)
+    recordStep(6);
+
     const ms = performance.now() - pageStart;
     setStatus(`로딩 완료(안정화): ${ms.toFixed(0)} ms\n(기준: 웹 진입 순간 → GLB 로드 + scene ready + 프레임 안정화)`);
   } catch (e) {
@@ -115,6 +153,7 @@ function disconnect() {
     btnConnect.disabled = false;
     btnDisconnect.disabled = true;
     setStatus("해제 완료(Dispose). 다시 연결을 눌러주세요.");
+    resetTimeline();
   }
 }
 

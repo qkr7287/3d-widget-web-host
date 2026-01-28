@@ -89,15 +89,103 @@ body {
 .layout {
   height: calc(100vh - 57px);
   padding: 14px;
+  display: flex;
+  gap: 14px;
+  min-width: 0;
 }
 
 .canvasPanel {
   position: relative;
-  height: 100%;
+  flex: 1;
+  min-width: 0;
   border: 1px solid var(--border);
   border-radius: 14px;
   overflow: hidden;
   background: var(--panel2);
+}
+
+/* 로딩 단계 타임라인 */
+.loadTimeline {
+  flex-shrink: 0;
+  width: 280px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--panel);
+  padding: 12px 14px;
+  overflow: auto;
+}
+
+.loadTimeline__title {
+  font-weight: 700;
+  font-size: 12px;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.loadTimeline__steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.loadTimeline__step {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--panel2);
+  border: 1px solid transparent;
+  font-size: 11px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.loadTimeline__step--done {
+  border-color: var(--accent);
+  background: rgba(124, 156, 255, 0.08);
+}
+
+.loadTimeline__label {
+  color: var(--muted);
+  flex: 1;
+  min-width: 0;
+  line-height: 1.35;
+}
+
+.loadTimeline__step--done .loadTimeline__label {
+  color: var(--text);
+}
+
+.loadTimeline__ms {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 12px;
+}
+
+.loadTimeline__step:not(.loadTimeline__step--done) .loadTimeline__ms {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.loadTimeline__ref {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.loadTimeline__ref code {
+  font-size: 10px;
+  background: var(--panel2);
+  padding: 2px 4px;
+  border-radius: 4px;
 }
 
 #renderCanvas {

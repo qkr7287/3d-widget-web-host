@@ -68,12 +68,29 @@
 - **수집할 증거(권장)**
   - Network에서 `free_cyberpunk_hovercar.glb` 요청의 **Status/Size/Time**
   - Console 스크린샷(에러 없음)
+  - 결과 스크린샷(첨부)
+
+![TC-01 (노트북/46) web-host 5173 결과](/docs/images/TC-01-46_5173.png)
+
+![TC-01 (데스크탑/47) 3d-widget 5174 Dev 서버](/docs/images/TC-01-47_5174_3d-widget.png)
+
+![TC-01 (노트북/46) web-host 최종 결과 화면](/docs/images/TC-01-result-web.png)
 
 ---
 
 ### TC-02 combined-app(DEV) — 로딩 타임 측정(3회) 및 평균 산출
 
 - **목적**: 원격 임베드 없이 로컬 import로 실행하는 결합 앱의 로딩 타임을 측정(비교 기준)
+- **측정 로직(기준)**
+  - **시작 시점**: 페이지 진입 직후의 시간(`pageStart = getPageStartNow()` → 기본값 `performance.now()`; 필요 시 `window.__PAGE_START`로 오버라이드 가능)
+  - **종료 시점(=로딩 완료/안정화)**: `mountBabylon(...).ready`가 resolve 되는 순간
+    - GLB 로드 완료 → `scene.whenReadyAsync()`(scene ready) → `waitFrames(scene, 8)`(렌더 안정화 프레임 대기)
+  - **표시 값**: `ms = performance.now() - pageStart` 를 화면에 `로딩 완료(안정화): XXX ms`로 출력
+  - **재현성(주의)**: 동일 PC/동일 조건 반복 측정에서도 보통 **±3~10%** 정도 흔들릴 수 있고, 조건이 조금만 달라져도(캐시 유무/CPU 부하/백그라운드 탭/네트워크 등) **±10~30%+** 변동이 충분히 발생할 수 있음
+  - **`waitFrames(scene, 8)` 동작 방식(요약)**: `scene.onAfterRenderObservable`에 콜백을 등록해 **렌더가 끝난 프레임을 1개씩 카운트**하다가, `frameCount(=8)`에 도달하면 옵저버를 제거하고 resolve 함 → “scene ready 직후” 한 번으로 끝내지 않고 **몇 프레임을 더 렌더**해 텍스처/셰이더 준비 및 첫 프레임 스파이크를 완화하는 목적
+  - **코드 위치**
+    - 시간 계산/표시: `apps/combined-app/src/main.ts`
+    - 안정화(ready) 정의: `apps/3d-widget/src/embed.ts`
 - **환경**
   - (권장) 한 장비에서 `apps/combined-app` 실행 후 측정
   - 브라우저: 동일 버전/동일 조건 유지
