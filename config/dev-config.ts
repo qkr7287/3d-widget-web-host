@@ -36,6 +36,10 @@ export const PORT_COMBINED_APP = Number(process.env.PORT_COMBINED_APP) || 6100;
  */
 export const WIDGET_PROTOCOL = process.env.WIDGET_PROTOCOL || "http";
 export const WIDGET_HOST = process.env.WIDGET_HOST ?? "";
+/** 브라우저가 위젯 로드할 포트 (compose 호스트 포트, 예: 5201). 없으면 PORT_3D_WIDGET 사용 */
+export const WIDGET_PUBLIC_PORT = process.env.WIDGET_PUBLIC_PORT
+  ? Number(process.env.WIDGET_PUBLIC_PORT)
+  : PORT_3D_WIDGET;
 
 /**
  * (옵션) 원격 모듈 URL을 통째로 고정하고 싶을 때 사용

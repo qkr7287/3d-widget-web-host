@@ -1,5 +1,5 @@
 import { defineConfig } from "vite";
-import { DEV_SERVER_HOST, PORT_3D_WIDGET, PORT_WEB_HOST, WIDGET_EMBED_URL_OVERRIDE, WIDGET_HOST, WIDGET_PROTOCOL } from "../../config/dev-config";
+import { DEV_SERVER_HOST, PORT_WEB_HOST, WIDGET_EMBED_URL_OVERRIDE, WIDGET_HOST, WIDGET_PROTOCOL, WIDGET_PUBLIC_PORT } from "../../config/dev-config";
 
 export default defineConfig(({ mode }) => ({
   server: {
@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => ({
   define: {
     __WIDGET_PROTOCOL__: JSON.stringify(WIDGET_PROTOCOL),
     __WIDGET_HOST__: JSON.stringify(WIDGET_HOST),
-    __WIDGET_PORT__: JSON.stringify(PORT_3D_WIDGET),
+    __WIDGET_PORT__: JSON.stringify(WIDGET_PUBLIC_PORT),
     __WIDGET_EMBED_URL_OVERRIDE__: JSON.stringify(WIDGET_EMBED_URL_OVERRIDE),
     __MODE__: JSON.stringify(mode),
   },
