@@ -83,7 +83,7 @@ async function connectOnce() {
 
     // 2. 자동 연결 시작
     recordStep(2);
-
+    console.log("REMOTE_EMBED_URL", REMOTE_EMBED_URL);
     // 중요: Vite가 빌드 타임에 URL을 해석하려고 하지 않도록 @vite-ignore 사용
     const mod = (await import(/* @vite-ignore */ REMOTE_EMBED_URL)) as RemoteWidgetModule;
 
