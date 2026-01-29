@@ -1,0 +1,22 @@
+# Git
+.git
+.gitignore
+
+# Node
+node_modules/
+npm-debug.log*
+.npm
+
+# Local configs (compose에서 env_file로 주입)
+.env
+.env.*
+
+# IDE / OS
+.vscode/
+.idea/
+**/.DS_Store
+*.log
+*.pid
+
+# Docs (선택: 이미지 용량 줄일 때)
+# docs/

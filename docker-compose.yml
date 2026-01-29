@@ -1,0 +1,22 @@
+services:
+  full:
+    build: .
+    env_file:
+      - .env.full
+    command: npm run dev:compare
+    restart: unless-stopped
+    ports:
+      - "5200:5173"
+      - "5201:5174"
+      - "5202:6100"
+
+  webhost-only:
+    build: .
+    env_file:
+      - .env.webhost
+    command: npm run dev:host
+    restart: unless-stopped
+    ports:
+      - "5203:5173"
+    depends_on:
+      - full
