@@ -1,0 +1,24 @@
+name: Deploy (self-hosted)
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Copy env files (if present on server)
+        run: |
+          for f in .env.full .env.webhost; do
+            [ -f /home/agics-ai/github/3d-widget-web-host/$f ] && cp /home/agics-ai/github/3d-widget-web-host/$f . || true
+          done
+
+      - name: Docker Compose build
+        run: docker compose build --no-cache
+
+      - name: Docker Compose up
+        run: docker compose up -d
