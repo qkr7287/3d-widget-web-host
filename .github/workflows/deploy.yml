@@ -8,17 +8,18 @@ jobs:
   deploy:
     runs-on: self-hosted
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Copy env files (if present on server)
+      - name: Git pull
         run: |
-          for f in .env.full .env.webhost; do
-            [ -f /home/agics-ai/github/3d-widget-web-host/$f ] && cp /home/agics-ai/github/3d-widget-web-host/$f . || true
-          done
+          cd /home/agics-ai/github/3d-widget-web-host
+          git fetch origin main
+          git reset --hard origin/main
 
       - name: Docker Compose build
-        run: docker compose build --no-cache
+        run: |
+          cd /home/agics-ai/github/3d-widget-web-host
+          docker compose build --no-cache
 
       - name: Docker Compose up
-        run: docker compose up -d
+        run: |
+          cd /home/agics-ai/github/3d-widget-web-host
+          docker compose up -d
