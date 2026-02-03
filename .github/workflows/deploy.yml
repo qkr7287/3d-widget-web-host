@@ -23,3 +23,7 @@ jobs:
         run: |
           cd /home/agics-ai/github/3d-widget-web-host
           docker compose up -d --force-recreate
+
+      - name: Log deploy time
+        run: |
+          echo "$(date -Iseconds) deploy completed (git pull + docker compose up)" >> /home/agics-ai/github/3d-widget-web-host/deploy.log
