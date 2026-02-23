@@ -16,6 +16,8 @@ dist-ssr
 .env
 .env.full
 .env.webhost
+.env.full.three
+.env.webhost.three
 
 # Editor directories and files
 .vscode/*

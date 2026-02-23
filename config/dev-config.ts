@@ -45,6 +45,11 @@ export const WIDGET_PUBLIC_PORT = process.env.WIDGET_PUBLIC_PORT
   ? Number(process.env.WIDGET_PUBLIC_PORT)
   : PORT_3D_WIDGET;
 
+/** 브라우저가 Three 위젯 로드할 포트 (compose 호스트 포트, 예: 5205). 없으면 PORT_3D_WIDGET_THREE 사용 */
+export const WIDGET_PUBLIC_PORT_THREE = process.env.WIDGET_PUBLIC_PORT_THREE
+  ? Number(process.env.WIDGET_PUBLIC_PORT_THREE)
+  : PORT_3D_WIDGET_THREE;
+
 /**
  * (옵션) 원격 모듈 URL을 통째로 고정하고 싶을 때 사용
  * - 빈 문자열이면 기본 규칙(DEV: /src/embed.ts, PROD: /embed.js)

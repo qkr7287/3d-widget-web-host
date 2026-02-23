@@ -39,6 +39,24 @@ npm run dev:three
 - **Babylon** Host: `http://localhost:5173`, Widget: `http://localhost:5174`, Combined: `http://localhost:6100`
 - **Three.js** Host: `http://localhost:5175`, Widget: `http://localhost:5176`, Combined: `http://localhost:6101`
 
+## Docker (docker-compose)
+
+`.env.example`를 아래 파일들로 복사한 뒤 값(특히 `WIDGET_HOST`, `WIDGET_PUBLIC_PORT`, `WIDGET_PUBLIC_PORT_THREE`)을 환경에 맞게 수정해서 사용합니다.
+
+- `.env.full` / `.env.webhost` (Babylon)
+- `.env.full.three` / `.env.webhost.three` (Three.js)
+
+```bash
+# Babylon (Host+Widget+Combined)
+docker compose up --build full
+
+# Three.js (Host+Widget+Combined)
+docker compose up --build full-three
+
+# 둘 다 동시에
+docker compose up --build full full-three
+```
+
 ## 포트/호스트/위젯 주소를 쉽게 바꾸는 법(중요)
 
 **루트 `config/dev-config.ts` 한 파일만 수정**하면 3개 앱의 포트/호스트와 web-host가 가져올 위젯 기본 주소가 같이 바뀝니다.
