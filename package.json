@@ -3,16 +3,21 @@
   "private": true,
   "version": "0.0.0",
   "workspaces": [
-    "apps/*"
+    "apps/babylon/*",
+    "apps/three/*"
   ],
   "scripts": {
-    "dev": "concurrently -n WIDGET,HOST -c magenta,cyan \"npm -w apps/3d-widget run dev\" \"npm -w apps/web-host run dev\"",
-    "dev:widget": "npm -w apps/3d-widget run dev",
-    "dev:host": "npm -w apps/web-host run dev",
-    "dev:combined": "npm -w apps/combined-app run dev",
-    "dev:compare": "concurrently -n WIDGET,HOST,COMBINED -c magenta,cyan,yellow \"npm -w apps/3d-widget run dev\" \"npm -w apps/web-host run dev\" \"npm -w apps/combined-app run dev\"",
-    "build": "npm -w apps/3d-widget run build && npm -w apps/web-host run build",
-    "preview": "npm run build && concurrently -n WIDGET,HOST -c magenta,cyan \"npm -w apps/3d-widget run preview\" \"npm -w apps/web-host run preview\""
+    "dev": "concurrently -n WIDGET,HOST -c magenta,cyan \"npm -w @apps/babylon-3d-widget run dev\" \"npm -w @apps/babylon-web-host run dev\"",
+    "dev:widget": "npm -w @apps/babylon-3d-widget run dev",
+    "dev:host": "npm -w @apps/babylon-web-host run dev",
+    "dev:combined": "npm -w @apps/babylon-combined-app run dev",
+    "dev:compare": "concurrently -n WIDGET,HOST,COMBINED -c magenta,cyan,yellow \"npm -w @apps/babylon-3d-widget run dev\" \"npm -w @apps/babylon-web-host run dev\" \"npm -w @apps/babylon-combined-app run dev\"",
+    "build": "npm -w @apps/babylon-3d-widget run build && npm -w @apps/babylon-web-host run build",
+    "preview": "npm run build && concurrently -n WIDGET,HOST -c magenta,cyan \"npm -w @apps/babylon-3d-widget run preview\" \"npm -w @apps/babylon-web-host run preview\"",
+    "dev:three": "concurrently -n WIDGET,HOST -c green,blue \"npm -w @apps/three-3d-widget run dev\" \"npm -w @apps/three-web-host run dev\"",
+    "dev:three:combined": "npm -w @apps/three-combined-app run dev",
+    "build:three": "npm -w @apps/three-3d-widget run build && npm -w @apps/three-web-host run build",
+    "preview:three": "npm run build:three && concurrently -n WIDGET,HOST -c green,blue \"npm -w @apps/three-3d-widget run preview\" \"npm -w @apps/three-web-host run preview\""
   },
   "devDependencies": {
     "@types/node": "^25.0.9",
