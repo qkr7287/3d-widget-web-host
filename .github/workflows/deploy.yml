@@ -75,10 +75,15 @@ jobs:
           cd /home/agics-ai/github/3d-widget-web-host
           docker compose build --no-cache
 
+      - name: Docker Compose down (remove orphans)
+        run: |
+          cd /home/agics-ai/github/3d-widget-web-host
+          docker compose down --remove-orphans
+
       - name: Docker Compose up
         run: |
           cd /home/agics-ai/github/3d-widget-web-host
-          docker compose up -d --force-recreate
+          docker compose up -d --force-recreate --remove-orphans
 
       - name: Log deploy time
         run: |
