@@ -7,6 +7,8 @@ import modelUrl from "../asset/free_cyberpunk_hovercar.glb?url";
 import envMapUrl from "../asset/royal_esplanade_2k.hdr?url";
 
 export type ThreeWidgetController = {
+  renderer: THREE.WebGLRenderer;
+  camera: THREE.PerspectiveCamera;
   scene: THREE.Scene;
   ready: Promise<void>;
   dispose: () => void;
@@ -56,22 +58,37 @@ export function mountThree(
   options?: MountThreeOptions,
 ): ThreeWidgetController {
   const base = options?.assetsBase ?? "";
-  const modelUrlResolved = base ? `${base.replace(/\/$/, "")}/free_cyberpunk_hovercar.glb` : modelUrl;
-  const envMapUrlResolved = base ? `${base.replace(/\/$/, "")}/royal_esplanade_2k.hdr` : envMapUrl;
+  const modelUrlResolved = base
+    ? `${base.replace(/\/$/, "")}/free_cyberpunk_hovercar.glb`
+    : new URL(modelUrl, import.meta.url).href;
+  const envMapUrlResolved = base
+    ? `${base.replace(/\/$/, "")}/royal_esplanade_2k.hdr`
+    : new URL(envMapUrl, import.meta.url).href;
+
+  const getCanvasSize = () => {
+    const rect = canvas.getBoundingClientRect();
+    const w = Math.max(1, Math.floor(rect.width));
+    const h = Math.max(1, Math.floor(rect.height));
+    return { w, h };
+  };
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0.08, 0.1, 0.12);
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+  {
+    const { w, h } = getCanvasSize();
+    renderer.setSize(w, h);
+  }
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.1;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-  const camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
+  const { w: initialW, h: initialH } = getCanvasSize();
+  const camera = new THREE.PerspectiveCamera(50, initialW / initialH, 0.1, 100);
   camera.position.set(0, 0, 6);
 
   const controls = new OrbitControls(camera, canvas);
@@ -102,60 +119,96 @@ export function mountThree(
   const modelRoot = new THREE.Group();
   scene.add(modelRoot);
 
+  // 렌더/리사이즈 자체가 정상인지 확인용(모델 로드 전 플레이스홀더)
+  const placeholderRoot = new THREE.Group();
+  scene.add(placeholderRoot);
+  const placeholderSphere = new THREE.Mesh(
+    new THREE.SphereGeometry(0.6, 32, 16),
+    new THREE.MeshStandardMaterial({ color: 0x7c9cff, metalness: 0.15, roughness: 0.55 }),
+  );
+  placeholderSphere.position.set(0, 0.6, 0);
+  placeholderSphere.castShadow = true;
+  placeholderSphere.receiveShadow = true;
+  placeholderRoot.add(placeholderSphere);
+  const placeholderGround = new THREE.Mesh(
+    new THREE.PlaneGeometry(8, 8),
+    new THREE.MeshStandardMaterial({ color: 0x0c0f14, metalness: 0, roughness: 1 }),
+  );
+  placeholderGround.rotation.x = -Math.PI / 2;
+  placeholderGround.receiveShadow = true;
+  placeholderRoot.add(placeholderGround);
+
   let disposed = false;
   let animationId = 0;
   let mixer: THREE.AnimationMixer | null = null;
   const clock = new THREE.Clock();
 
   const ready = (async () => {
-    const pmremGenerator = new THREE.PMREMGenerator(renderer);
-    pmremGenerator.compileEquirectangularShader();
+    try {
+      const gltf = await new GLTFLoader().loadAsync(modelUrlResolved);
+      if (disposed) return;
 
-    const [gltf, envTexture] = await Promise.all([
-      new GLTFLoader().loadAsync(modelUrlResolved),
-      new RGBELoader().loadAsync(envMapUrlResolved),
-    ]);
-    if (disposed) return;
-
-    const envMap = pmremGenerator.fromEquirectangular(envTexture).texture;
-    scene.environment = envMap;
-    scene.background = envMap;
-    envTexture.dispose();
-    pmremGenerator.dispose();
-
-    const loaded = gltf.scene;
-    loaded.traverse((child: THREE.Object3D) => {
-      if (child instanceof THREE.Mesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
+      // HDR 환경맵은 실패해도 모델 렌더가 되도록 분리 처리
+      try {
+        const rgbeLoader = new RGBELoader();
+        rgbeLoader.setDataType(THREE.HalfFloatType);
+        const envTexture = await rgbeLoader.loadAsync(envMapUrlResolved);
+        if (!disposed && envTexture && (envTexture as unknown as { image?: unknown }).image) {
+          const pmremGenerator = new THREE.PMREMGenerator(renderer);
+          pmremGenerator.compileEquirectangularShader();
+          try {
+            const envMap = pmremGenerator.fromEquirectangular(envTexture).texture;
+            scene.environment = envMap;
+            scene.background = envMap;
+          } finally {
+            envTexture.dispose();
+            pmremGenerator.dispose();
+          }
+        }
+      } catch (e) {
+        console.warn("[three-widget] env hdr load/pmrem failed, fallback to solid background", e);
       }
-    });
-    modelRoot.add(loaded);
 
-    if (gltf.animations?.length && !disposed) {
-      mixer = new THREE.AnimationMixer(loaded);
-      for (const clip of gltf.animations) {
-        const action = mixer.clipAction(clip);
-        action.setLoop(THREE.LoopRepeat, Infinity);
-        action.play();
+      const loaded = gltf.scene;
+      loaded.traverse((child: THREE.Object3D) => {
+        if (child instanceof THREE.Mesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+      modelRoot.add(loaded);
+
+      if (gltf.animations?.length && !disposed) {
+        mixer = new THREE.AnimationMixer(loaded);
+        for (const clip of gltf.animations) {
+          const action = mixer.clipAction(clip);
+          action.setLoop(THREE.LoopRepeat, Infinity);
+          action.play();
+        }
       }
+
+      const { center } = computeBounds(loaded);
+      modelRoot.position.sub(center);
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0, 6);
+      camera.near = 0.1;
+      camera.far = 2000;
+      camera.updateProjectionMatrix();
+
+      await waitFrames(8);
+
+      // ready 이후에 플레이스홀더 제거(검은 화면처럼 보이는 상황 방지)
+      placeholderRoot.removeFromParent();
+    } catch (e) {
+      const mat = placeholderSphere.material as THREE.MeshStandardMaterial;
+      mat.color.setHex(0xff6b6b);
+      console.error("[three-widget] load failed", e);
+      throw e;
     }
-
-    const { center, radius } = computeBounds(loaded);
-    controls.target.copy(center);
-    const dist = radius * 2.2;
-    camera.position.set(center.x, center.y, center.z + dist);
-    camera.near = Math.max(0.1, radius * 0.1);
-    camera.far = Math.max(100, radius * 20);
-    camera.updateProjectionMatrix();
-
-    await waitFrames(8);
   })();
 
   const onResize = () => {
-    const w = canvas.clientWidth;
-    const h = canvas.clientHeight;
-    if (w <= 0 || h <= 0) return;
+    const { w, h } = getCanvasSize();
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
     renderer.setSize(w, h);
@@ -178,6 +231,8 @@ export function mountThree(
   animationId = requestAnimationFrame(animate);
 
   return {
+    renderer,
+    camera,
     scene,
     ready,
     dispose: () => {
@@ -187,6 +242,10 @@ export function mountThree(
       cancelAnimationFrame(animationId);
       mixer = null;
       controls.dispose();
+      placeholderSphere.geometry.dispose();
+      (placeholderSphere.material as THREE.Material).dispose();
+      placeholderGround.geometry.dispose();
+      (placeholderGround.material as THREE.Material).dispose();
       scene.traverse((obj: THREE.Object3D) => {
         if (obj instanceof THREE.Mesh) {
           obj.geometry?.dispose();

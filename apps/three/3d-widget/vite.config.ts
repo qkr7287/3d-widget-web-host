@@ -11,6 +11,12 @@ export default defineConfig({
     port: PORT_3D_WIDGET_THREE,
     strictPort: true,
     cors: true,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+      "Access-Control-Allow-Headers": "*",
+      "Access-Control-Allow-Private-Network": "true",
+    },
   },
   preview: {
     host: DEV_SERVER_HOST,
@@ -18,6 +24,7 @@ export default defineConfig({
     strictPort: true,
     headers: {
       "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Private-Network": "true",
     },
   },
   build: {
