@@ -2,24 +2,24 @@ services:
   full-babylon:
     build: .
     env_file:
-      - .env.full
+      - .env.full.babylon
     command: npm run dev:compare
     restart: unless-stopped
     ports:
-      - "5200:5173"
-      - "5201:5174"
-      - "5202:6100"
+      - "5100:5100" # web-host
+      - "5101:5101" # 3d-widget
+      - "5102:5102" # combined-app
 
   webhost-only-babylon:
     build: .
     env_file:
-      - .env.webhost
+      - .env.webhost.babylon
     command: npm run dev:host
     restart: unless-stopped
     ports:
-      - "5203:5173"
+      - "5103:5103"
     depends_on:
-      - full
+      - full-babylon
 
   full-three:
     build: .
@@ -28,9 +28,9 @@ services:
     command: npm run dev:three:compare
     restart: unless-stopped
     ports:
-      - "5204:5175"
-      - "5205:5176"
-      - "5206:6101"
+      - "5200:5200" # web-host
+      - "5201:5201" # 3d-widget
+      - "5202:5202" # combined-app
 
   webhost-only-three:
     build: .
@@ -39,6 +39,6 @@ services:
     command: npm run dev:three:host
     restart: unless-stopped
     ports:
-      - "5207:5175"
+      - "5203:5203"
     depends_on:
       - full-three

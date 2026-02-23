@@ -16,15 +16,15 @@
 
 **Babylon.js** (`apps/babylon/`)
 
-- `apps/babylon/3d-widget` (기본 포트 5174) — Babylon.js 위젯, `mountBabylon(canvas)` export
-- `apps/babylon/web-host` (기본 포트 5173) — 호스트 웹앱, 원격 위젯 import
-- `apps/babylon/combined-app` (기본 포트 6100) — 로컬 import 결합 앱(로딩타임 비교용)
+- `apps/babylon/3d-widget` (기본 포트 5101) — Babylon.js 위젯, `mountBabylon(canvas)` export
+- `apps/babylon/web-host` (기본 포트 5100) — 호스트 웹앱, 원격 위젯 import
+- `apps/babylon/combined-app` (기본 포트 5102) — 로컬 import 결합 앱(로딩타임 비교용)
 
 **Three.js** (`apps/three/`)
 
-- `apps/three/3d-widget` (기본 포트 5176) — Three.js 위젯, 동일 API `mountBabylon(canvas)` export
-- `apps/three/web-host` (기본 포트 5175) — 호스트 웹앱
-- `apps/three/combined-app` (기본 포트 6101) — 로컬 import 결합 앱
+- `apps/three/3d-widget` (기본 포트 5201) — Three.js 위젯, 동일 API `mountBabylon(canvas)` export
+- `apps/three/web-host` (기본 포트 5200) — 호스트 웹앱
+- `apps/three/combined-app` (기본 포트 5202) — 로컬 import 결합 앱
 
 ## 실행
 
@@ -36,25 +36,25 @@ npm run dev
 npm run dev:three
 ```
 
-- **Babylon** Host: `http://localhost:5173`, Widget: `http://localhost:5174`, Combined: `http://localhost:6100`
-- **Three.js** Host: `http://localhost:5175`, Widget: `http://localhost:5176`, Combined: `http://localhost:6101`
+- **Babylon** Host: `http://localhost:5100`, Widget: `http://localhost:5101`, Combined: `http://localhost:5102`
+- **Three.js** Host: `http://localhost:5200`, Widget: `http://localhost:5201`, Combined: `http://localhost:5202`
 
 ## Docker (docker-compose)
 
-`.env.example`를 아래 파일들로 복사한 뒤 값(특히 `WIDGET_HOST`, `WIDGET_PUBLIC_PORT`, `WIDGET_PUBLIC_PORT_THREE`)을 환경에 맞게 수정해서 사용합니다.
+아래 env 파일 값(특히 `WIDGET_HOST`, `WIDGET_PUBLIC_PORT_BABYLON`, `WIDGET_PUBLIC_PORT_THREE`)을 환경에 맞게 수정해서 사용합니다.
 
-- `.env.full` / `.env.webhost` (Babylon)
+- `.env.full.babylon` / `.env.webhost.babylon` (Babylon)
 - `.env.full.three` / `.env.webhost.three` (Three.js)
 
 ```bash
 # Babylon (Host+Widget+Combined)
-docker compose up --build full
+docker compose up --build full-babylon
 
 # Three.js (Host+Widget+Combined)
 docker compose up --build full-three
 
 # 둘 다 동시에
-docker compose up --build full full-three
+docker compose up --build full-babylon full-three
 ```
 
 ## 포트/호스트/위젯 주소를 쉽게 바꾸는 법(중요)
@@ -63,5 +63,5 @@ docker compose up --build full full-three
 
 ## 포인트
 
-- 개발 중 임베드: web-host에서 원격 `import("http://<WIDGET_HOST>:5174|5176/src/embed.ts")` (Babylon 5174, Three 5176)
+- 개발 중 임베드: web-host에서 원격 `import("http://<WIDGET_HOST>:5101|5201/src/embed.ts")` (Babylon 5101, Three 5201)
 - CORS: 각 3d-widget의 `vite.config.ts` 에서 `server.cors = true`

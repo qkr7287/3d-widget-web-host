@@ -3,7 +3,7 @@
  * 개발/테스트용 공통 설정(한 곳에서만 수정)
  *
  * - 포트/호스트를 바꾸고 싶으면 이 파일만 수정하세요.
- * - Docker Compose 사용 시 env_file(.env.full, .env.webhost) 값이 우선합니다.
+ * - Docker Compose 사용 시 env_file(.env.*) 값이 우선합니다.
  * - web-host가 원격 widget을 가져오는 주소도 여기 값으로 기본값이 결정됩니다.
  */
 
@@ -23,15 +23,18 @@ function parseDevServerHost(): true | string {
 export const DEV_SERVER_HOST: true | string = parseDevServerHost();
 
 /** 각 앱 dev 서버 포트 (Babylon) */
-export const PORT_WEB_HOST = Number(process.env.PORT_WEB_HOST) || 5173;
-export const PORT_3D_WIDGET = Number(process.env.PORT_3D_WIDGET) || 5174;
-// NOTE: 6000은 Chromium(Chrome/Edge)에서 ERR_UNSAFE_PORT로 차단되는 경우가 있어 6100 권장
-export const PORT_COMBINED_APP = Number(process.env.PORT_COMBINED_APP) || 6100;
+const portWebHostBabylonRaw = process.env.PORT_WEB_HOST_BABYLON ?? process.env.PORT_WEB_HOST;
+const port3dWidgetBabylonRaw = process.env.PORT_3D_WIDGET_BABYLON ?? process.env.PORT_3D_WIDGET;
+const portCombinedAppBabylonRaw = process.env.PORT_COMBINED_APP_BABYLON ?? process.env.PORT_COMBINED_APP;
+
+export const PORT_WEB_HOST = Number(portWebHostBabylonRaw) || 5100;
+export const PORT_3D_WIDGET = Number(port3dWidgetBabylonRaw) || 5101;
+export const PORT_COMBINED_APP = Number(portCombinedAppBabylonRaw) || 5102;
 
 /** 각 앱 dev 서버 포트 (Three.js) */
-export const PORT_WEB_HOST_THREE = Number(process.env.PORT_WEB_HOST_THREE) || 5175;
-export const PORT_3D_WIDGET_THREE = Number(process.env.PORT_3D_WIDGET_THREE) || 5176;
-export const PORT_COMBINED_APP_THREE = Number(process.env.PORT_COMBINED_APP_THREE) || 6101;
+export const PORT_WEB_HOST_THREE = Number(process.env.PORT_WEB_HOST_THREE) || 5200;
+export const PORT_3D_WIDGET_THREE = Number(process.env.PORT_3D_WIDGET_THREE) || 5201;
+export const PORT_COMBINED_APP_THREE = Number(process.env.PORT_COMBINED_APP_THREE) || 5202;
 
 /**
  * web-host가 3d-widget을 가져올 때 사용할 기본 주소 구성요소
@@ -41,9 +44,8 @@ export const PORT_COMBINED_APP_THREE = Number(process.env.PORT_COMBINED_APP_THRE
 export const WIDGET_PROTOCOL = process.env.WIDGET_PROTOCOL || "http";
 export const WIDGET_HOST = process.env.WIDGET_HOST ?? "";
 /** 브라우저가 위젯 로드할 포트 (compose 호스트 포트, 예: 5201). 없으면 PORT_3D_WIDGET 사용 */
-export const WIDGET_PUBLIC_PORT = process.env.WIDGET_PUBLIC_PORT
-  ? Number(process.env.WIDGET_PUBLIC_PORT)
-  : PORT_3D_WIDGET;
+const widgetPublicPortBabylonRaw = process.env.WIDGET_PUBLIC_PORT_BABYLON ?? process.env.WIDGET_PUBLIC_PORT;
+export const WIDGET_PUBLIC_PORT = widgetPublicPortBabylonRaw ? Number(widgetPublicPortBabylonRaw) : PORT_3D_WIDGET;
 
 /** 브라우저가 Three 위젯 로드할 포트 (compose 호스트 포트, 예: 5205). 없으면 PORT_3D_WIDGET_THREE 사용 */
 export const WIDGET_PUBLIC_PORT_THREE = process.env.WIDGET_PUBLIC_PORT_THREE

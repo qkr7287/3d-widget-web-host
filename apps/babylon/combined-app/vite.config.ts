@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 
 export default defineConfig({
   server: {
-    // 기본값: LAN(다른 기기)에서 http://192.168.x.x:6100 로 접속 가능
+    // 기본값: LAN(다른 기기)에서 http://192.168.x.x:5102 로 접속 가능
     host: DEV_SERVER_HOST,
     port: PORT_COMBINED_APP,
     strictPort: true,

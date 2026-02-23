@@ -1,6 +1,6 @@
 import "./style.css";
 
-// 로컬 결합 앱(6101): 원격 import 없이 Three.js 3d-widget 소스를 직접 import해서 실행
+// 로컬 결합 앱(5202): 원격 import 없이 Three.js 3d-widget 소스를 직접 import해서 실행
 import { mountThree } from "@apps/three-3d-widget/embed";
 
 const btnMount = document.getElementById("btn-mount") as HTMLButtonElement;
