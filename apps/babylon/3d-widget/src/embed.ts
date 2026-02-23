@@ -31,9 +31,21 @@ function computeWorldBounds(meshes: BABYLON.AbstractMesh[]) {
 
   for (const m of meshes) {
     if (!m.isEnabled()) continue;
-    const vertices = typeof (m as any).getTotalVertices === "function" ? (m as any).getTotalVertices() : 0;
-    if (vertices === 0) continue;
-    const { min: bMin, max: bMax } = m.getHierarchyBoundingVectors(true);
+    const bi = m.getBoundingInfo?.();
+    const bb = bi?.boundingBox;
+    if (!bb) continue;
+    const bMin = bb.minimumWorld;
+    const bMax = bb.maximumWorld;
+    if (
+      !Number.isFinite(bMin.x) ||
+      !Number.isFinite(bMin.y) ||
+      !Number.isFinite(bMin.z) ||
+      !Number.isFinite(bMax.x) ||
+      !Number.isFinite(bMax.y) ||
+      !Number.isFinite(bMax.z)
+    ) {
+      continue;
+    }
     min = BABYLON.Vector3.Minimize(min, bMin);
     max = BABYLON.Vector3.Maximize(max, bMax);
   }
@@ -73,6 +85,19 @@ export function mountBabylon(canvas: HTMLCanvasElement): BabylonWidgetController
   const scene = new BABYLON.Scene(engine);
   scene.clearColor = new BABYLON.Color4(0.02, 0.03, 0.05, 1);
 
+  const resizeToCanvas = () => {
+    const rect = canvas.getBoundingClientRect();
+    const w = Math.floor(rect.width);
+    const h = Math.floor(rect.height);
+    if (w > 0 && h > 0) {
+      engine.setSize(w, h, true);
+    } else {
+      engine.resize();
+    }
+  };
+  const resizeObserver = new ResizeObserver(() => resizeToCanvas());
+  resizeObserver.observe(canvas);
+
   const camera = new BABYLON.ArcRotateCamera(
     "camera",
     -Math.PI / 2.3,
@@ -82,6 +107,10 @@ export function mountBabylon(canvas: HTMLCanvasElement): BabylonWidgetController
     scene,
   );
   camera.attachControl(canvas, true);
+  scene.activeCamera = camera;
+  camera.minZ = 0.01;
+  camera.maxZ = 10000;
+  resizeToCanvas();
   camera.wheelDeltaPercentage = 0.01;
   camera.panningSensibility = 1400;
   camera.lowerRadiusLimit = 1.0;
@@ -91,6 +120,15 @@ export function mountBabylon(canvas: HTMLCanvasElement): BabylonWidgetController
   const hemi = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0.1, 1, 0.2), scene);
   hemi.intensity = 0.65;
   hemi.groundColor = new BABYLON.Color3(0.05, 0.06, 0.08);
+
+  // 모델 로드 전에도 렌더가 되는지 확인용(임베드 환경에서 "검은 화면" 방지)
+  const placeholderRoot = new BABYLON.TransformNode("placeholderRoot", scene);
+  const placeholderSphere = BABYLON.MeshBuilder.CreateSphere("placeholderSphere", { diameter: 1.2 }, scene);
+  placeholderSphere.parent = placeholderRoot;
+  placeholderSphere.position.y = 0.6;
+  const placeholderGround = BABYLON.MeshBuilder.CreateGround("placeholderGround", { width: 8, height: 8 }, scene);
+  placeholderGround.parent = placeholderRoot;
+  placeholderGround.receiveShadows = true;
 
   // 키 라이트 + 그림자(“이쁘게”의 핵심)
   const sun = new BABYLON.DirectionalLight("sun", new BABYLON.Vector3(-0.6, -1, -0.3), scene);
@@ -105,8 +143,13 @@ export function mountBabylon(canvas: HTMLCanvasElement): BabylonWidgetController
 
   // PBR 환경(환경맵) + 이미지 프로세싱(ACES 톤매핑)
   // - GLB가 PBR 머티리얼인 경우, environmentTexture 유무가 “이쁘게”에 큰 영향
-  scene.environmentTexture = new BABYLON.HDRCubeTexture(envMapUrl, scene, 512, false, true, false, true);
-  scene.createDefaultSkybox(scene.environmentTexture, true, 900, 0);
+  const envUrlResolved = new URL(envMapUrl, import.meta.url).href;
+  scene.environmentTexture = new BABYLON.HDRCubeTexture(envUrlResolved, scene, 512, false, true, false, true);
+  const skybox = scene.createDefaultSkybox(scene.environmentTexture, true, 50000, 0);
+  if (skybox) {
+    skybox.infiniteDistance = true;
+    skybox.isPickable = false;
+  }
   scene.imageProcessingConfiguration.toneMappingEnabled = true;
   scene.imageProcessingConfiguration.toneMappingType = BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
   scene.imageProcessingConfiguration.exposure = 1.15;
@@ -120,8 +163,8 @@ export function mountBabylon(canvas: HTMLCanvasElement): BabylonWidgetController
   pipeline.bloomWeight = 0.2;
   pipeline.bloomKernel = 64;
 
-  // GLB 로드 (Vite가 static asset으로 처리하도록 URL 형태로 참조)
-  const modelUrl = new URL("../asset/free_cyberpunk_hovercar.glb", import.meta.url).href;
+  const assetBaseUrl = new URL(/* @vite-ignore */ "../asset/", import.meta.url).href;
+  const modelFileName = "free_cyberpunk_hovercar.glb";
 
   // 모델 루트 노드(회전/스케일 등 제어용)
   const modelRoot = new BABYLON.TransformNode("modelRoot", scene);
@@ -130,13 +173,12 @@ export function mountBabylon(canvas: HTMLCanvasElement): BabylonWidgetController
 
   // 로딩은 비동기: 첫 프레임부터 씬은 돌고, 로드 완료 후 프레이밍/그림자 설정
   const ready = (async () => {
-    const result = await BABYLON.SceneLoader.ImportMeshAsync(null, "", modelUrl, scene);
+    const result = await BABYLON.SceneLoader.ImportMeshAsync(null, assetBaseUrl, modelFileName, scene);
     if (disposed) return;
     loadedMeshes = result.meshes;
 
     // 로드된 메쉬들을 한 루트 아래로 정리
     for (const m of loadedMeshes) {
-      if (m === scene.meshes[0]) continue;
       if (m.parent == null) m.parent = modelRoot;
       m.receiveShadows = true;
       // 그림자 캐스터는 Mesh에만 추가(TransformNode 등 제외)
@@ -145,7 +187,6 @@ export function mountBabylon(canvas: HTMLCanvasElement): BabylonWidgetController
       }
     }
 
-    // 바운딩 기반으로 카메라 프레이밍
     const drawable = loadedMeshes.filter((m) => (m instanceof BABYLON.Mesh ? m.getTotalVertices() > 0 : false));
     const { center, radius } = computeWorldBounds(drawable);
     camera.setTarget(center);
@@ -156,7 +197,6 @@ export function mountBabylon(canvas: HTMLCanvasElement): BabylonWidgetController
     // 살짝 보기 좋은 각도
     camera.alpha = -Math.PI / 2.2;
     camera.beta = Math.PI / 2.55;
-
     // 그림자 영역(모델 크기에 맞춰 튜닝)
     shadows.getShadowMap()?.renderList?.length; // ensure map created
     shadows.setDarkness(0.3);
@@ -165,6 +205,9 @@ export function mountBabylon(canvas: HTMLCanvasElement): BabylonWidgetController
     await scene.whenReadyAsync();
     if (disposed) return;
     await waitFrames(scene, 8);
+
+    // ready 이후에 플레이스홀더 제거(모델이 안 보이는 상황에서도 "완전 빈 화면" 방지)
+    placeholderRoot.dispose(false, true);
   })();
 
   // 모델이 로드되면 은근히 돌아가게(멋내기)
@@ -176,10 +219,13 @@ export function mountBabylon(canvas: HTMLCanvasElement): BabylonWidgetController
   });
 
   engine.runRenderLoop(() => {
+    if (engine.getRenderWidth() === 0 || engine.getRenderHeight() === 0) {
+      resizeToCanvas();
+    }
     scene.render();
   });
 
-  const onResize = () => engine.resize();
+  const onResize = () => resizeToCanvas();
   window.addEventListener("resize", onResize, { passive: true });
 
   return {
@@ -188,9 +234,11 @@ export function mountBabylon(canvas: HTMLCanvasElement): BabylonWidgetController
     ready,
     dispose: () => {
       disposed = true;
+      resizeObserver.disconnect();
       window.removeEventListener("resize", onResize);
       pipeline.dispose();
       shadows.dispose();
+      placeholderRoot.dispose(false, true);
       modelRoot.dispose(false, true);
       scene.dispose();
       engine.dispose();

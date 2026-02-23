@@ -1,8 +1,24 @@
 import "./style.css";
 
 type RemoteWidgetModule = {
-  mountBabylon: (canvas: HTMLCanvasElement) => { dispose: () => void; ready: Promise<void> };
+  mountBabylon: (canvas: HTMLCanvasElement) => {
+    engine: { getRenderWidth: () => number; getRenderHeight: () => number };
+    scene: unknown;
+    dispose: () => void;
+    ready: Promise<void>;
+  };
 };
+
+function wireGlobalErrorStatus(setStatus: (text: string, kind?: "info" | "error") => void) {
+  const format = (e: unknown) => (e instanceof Error ? `${e.name}: ${e.message}` : String(e));
+  window.addEventListener("error", (ev) => {
+    const msg = ev.error ? format(ev.error) : ev.message;
+    setStatus(`런타임 에러: ${msg}`, "error");
+  });
+  window.addEventListener("unhandledrejection", (ev) => {
+    setStatus(`Promise 에러: ${format(ev.reason)}`, "error");
+  });
+}
 
 /**
  * "원격 위젯 주소"를 수정하기 쉽게 "루트 config/dev-config.ts" 기반으로 구성.
@@ -41,8 +57,19 @@ function setStatus(text: string, kind: "info" | "error" = "info") {
   statusEl.classList.toggle("status--error", kind === "error");
 }
 
+wireGlobalErrorStatus(setStatus);
+
 let controller: { dispose: () => void } | null = null;
 let readyPromise: Promise<void> | null = null;
+let debugIntervalId: number | null = null;
+let connecting = false;
+
+function stopDebugInterval() {
+  if (debugIntervalId != null) {
+    window.clearInterval(debugIntervalId);
+    debugIntervalId = null;
+  }
+}
 
 function sleep(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -80,6 +107,7 @@ async function connectOnce() {
   try {
     setStatus("원격 3D 위젯 로딩 중...(모듈 import)");
     btnConnect.disabled = true;
+    connecting = true;
 
     // 2. 자동 연결 시작
     recordStep(2);
@@ -103,6 +131,13 @@ async function connectOnce() {
     }
 
     const pageStart = getPageStartNow();
+    // 중복 마운트 방지: 기존 컨트롤러가 있으면 먼저 dispose
+    if (controller) {
+      stopDebugInterval();
+      controller.dispose();
+      controller = null;
+      readyPromise = null;
+    }
     const mounted = mount(canvas);
 
     // 5. mount 실행 완료 (GLB·env 요청 시작됨)
@@ -112,6 +147,25 @@ async function connectOnce() {
     readyPromise = mounted.ready;
     btnDisconnect.disabled = false;
     setStatus(`임베드 성공: ${REMOTE_EMBED_URL}\n3D 준비 중...(GLB 로드 + scene 안정화)`);
+
+    stopDebugInterval();
+    debugIntervalId = window.setInterval(() => {
+      if (!controller) return;
+      const rect = canvas.getBoundingClientRect();
+      const cw = canvas.clientWidth;
+      const ch = canvas.clientHeight;
+      const ew = mounted.engine?.getRenderWidth?.() ?? 0;
+      const eh = mounted.engine?.getRenderHeight?.() ?? 0;
+      if (Math.floor(rect.width) <= 0 || Math.floor(rect.height) <= 0 || cw <= 0 || ch <= 0 || ew === 0 || eh === 0) {
+        setStatus(
+          `캔버스/렌더 사이즈가 0입니다.\n` +
+            `canvas rect=${Math.floor(rect.width)}x${Math.floor(rect.height)}, client=${cw}x${ch}, attr=${canvas.width}x${canvas.height}\n` +
+            `engine=${ew}x${eh}\n` +
+            `REMOTE_EMBED_URL=${REMOTE_EMBED_URL}`,
+          "error",
+        );
+      }
+    }, 700);
 
     await readyPromise;
 
@@ -127,11 +181,14 @@ async function connectOnce() {
       `임베드 실패 (대부분 CORS/포트/원격 서버 미실행): ${e instanceof Error ? e.message : String(e)}`,
       "error",
     );
+  } finally {
+    connecting = false;
   }
 }
 
 async function connectWithRetry() {
   // 동시에 두 dev 서버를 띄우면 host가 먼저 올라오면서 widget이 아직 준비 전인 경우가 있어 재시도
+  if (connecting || controller) return;
   const delays = [0, 400, 800, 1400];
   for (let i = 0; i < delays.length; i += 1) {
     if (controller) return;
@@ -146,6 +203,7 @@ async function connectWithRetry() {
 
 function disconnect() {
   try {
+    stopDebugInterval();
     controller?.dispose();
   } finally {
     controller = null;

@@ -12,6 +12,13 @@ export default defineConfig({
     port: PORT_3D_WIDGET,
     strictPort: true,
     cors: true,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
+      "Access-Control-Allow-Headers": "*",
+      // HTTPS 페이지에서 사설망(http://192.168.x.x:port) 리소스를 불러올 때 차단되는 케이스 대응(Chrome PNA)
+      "Access-Control-Allow-Private-Network": "true",
+    },
   },
   preview: {
     host: DEV_SERVER_HOST,
@@ -20,6 +27,7 @@ export default defineConfig({
     headers: {
       // 운영(정적 서빙) 시나리오를 로컬에서 시뮬레이션할 때도 cross-origin import가 가능하도록
       "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Private-Network": "true",
     },
   },
   build: {
