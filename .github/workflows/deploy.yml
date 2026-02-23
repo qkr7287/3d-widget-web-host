@@ -14,6 +14,62 @@ jobs:
           git fetch origin main
           git reset --hard origin/main
 
+      - name: Ensure env files exist
+        run: |
+          cd /home/agics-ai/github/3d-widget-web-host
+
+          if [ ! -f .env.full.babylon ]; then
+            cat > .env.full.babylon <<'EOF'
+          DEV_SERVER_HOST=true
+          PORT_WEB_HOST_BABYLON=5100
+          PORT_3D_WIDGET_BABYLON=5101
+          PORT_COMBINED_APP_BABYLON=5102
+          WIDGET_PROTOCOL=http
+          WIDGET_HOST=
+          WIDGET_PUBLIC_PORT_BABYLON=5101
+          WIDGET_EMBED_URL_OVERRIDE=
+          EOF
+          fi
+
+          if [ ! -f .env.webhost.babylon ]; then
+            cat > .env.webhost.babylon <<'EOF'
+          DEV_SERVER_HOST=true
+          PORT_WEB_HOST_BABYLON=5103
+          PORT_3D_WIDGET_BABYLON=5101
+          PORT_COMBINED_APP_BABYLON=5102
+          WIDGET_PROTOCOL=http
+          WIDGET_HOST=
+          WIDGET_PUBLIC_PORT_BABYLON=5101
+          WIDGET_EMBED_URL_OVERRIDE=
+          EOF
+          fi
+
+          if [ ! -f .env.full.three ]; then
+            cat > .env.full.three <<'EOF'
+          DEV_SERVER_HOST=true
+          PORT_WEB_HOST_THREE=5200
+          PORT_3D_WIDGET_THREE=5201
+          PORT_COMBINED_APP_THREE=5202
+          WIDGET_PROTOCOL=http
+          WIDGET_HOST=
+          WIDGET_PUBLIC_PORT_THREE=5201
+          WIDGET_EMBED_URL_OVERRIDE=
+          EOF
+          fi
+
+          if [ ! -f .env.webhost.three ]; then
+            cat > .env.webhost.three <<'EOF'
+          DEV_SERVER_HOST=true
+          PORT_WEB_HOST_THREE=5203
+          PORT_3D_WIDGET_THREE=5201
+          PORT_COMBINED_APP_THREE=5202
+          WIDGET_PROTOCOL=http
+          WIDGET_HOST=
+          WIDGET_PUBLIC_PORT_THREE=5201
+          WIDGET_EMBED_URL_OVERRIDE=
+          EOF
+          fi
+
       - name: Docker Compose build
         run: |
           cd /home/agics-ai/github/3d-widget-web-host
