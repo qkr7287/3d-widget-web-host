@@ -89,7 +89,8 @@ export function mountThree(
 
   const { w: initialW, h: initialH } = getCanvasSize();
   const camera = new THREE.PerspectiveCamera(50, initialW / initialH, 0.1, 100);
-  camera.position.set(0, 0, 6);
+  const DEFAULT_CAMERA_DISTANCE = 12;
+  camera.position.set(0, 0, DEFAULT_CAMERA_DISTANCE);
 
   const controls = new OrbitControls(camera, canvas);
   controls.enableDamping = true;
@@ -190,7 +191,7 @@ export function mountThree(
       const { center } = computeBounds(loaded);
       modelRoot.position.sub(center);
       controls.target.set(0, 0, 0);
-      camera.position.set(0, 0, 6);
+      camera.position.set(0, 2, DEFAULT_CAMERA_DISTANCE);
       camera.near = 0.1;
       camera.far = 2000;
       camera.updateProjectionMatrix();
