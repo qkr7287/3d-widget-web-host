@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Combined App (6100) - 로딩타임 테스트</title>
+  <script>
+    // "웹에 들어간 순간" 기준점(로딩타임 측정)
+    window.__PAGE_START = performance.now();
+  </script>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="title">
+      <div class="title__main">Combined App (Three.js - 6101)</div>
+      <div class="title__sub">
+        이 페이지는 <span class="mono">로컬 import</span>로 3D 위젯 코드를 직접 실행합니다(원격 모듈 import 없음).
+      </div>
+    </div>
+    <div class="actions">
+      <button id="btn-mount" class="btn">마운트</button>
+      <button id="btn-unmount" class="btn btn--secondary" disabled>언마운트(Dispose)</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="canvasPanel">
+      <canvas id="renderCanvas"></canvas>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+    </section>
+    <aside class="loadTimeline" aria-label="로딩 단계">
+      <div class="loadTimeline__title">로딩 단계</div>
+      <ol class="loadTimeline__steps">
+        <li id="step-0" class="loadTimeline__step loadTimeline__step--done"><span class="loadTimeline__label">0. 페이지 진입 (Document)</span><span class="loadTimeline__ms" data-ms="0">0 ms</span></li>
+        <li id="step-1" class="loadTimeline__step"><span class="loadTimeline__label">1. host 앱 로드 (main.ts, style, Vite)</span><span class="loadTimeline__ms">—</span></li>
+        <li id="step-2" class="loadTimeline__step"><span class="loadTimeline__label">2. 마운트 클릭 / 자동 마운트</span><span class="loadTimeline__ms">—</span></li>
+        <li id="step-3" class="loadTimeline__step"><span class="loadTimeline__label">3. mount 실행 (GLB·HDR 요청 시작)</span><span class="loadTimeline__ms">—</span></li>
+        <li id="step-4" class="loadTimeline__step"><span class="loadTimeline__label">4. ready 종료 (프레임 안정화)</span><span class="loadTimeline__ms">—</span></li>
+      </ol>
+      <div class="loadTimeline__ref">기준: 페이지 진입 시점 (<code>__PAGE_START</code>)</div>
+    </aside>
+  </main>
+  <script>console.log("combined-app");</script>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>

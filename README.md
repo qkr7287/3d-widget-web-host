@@ -12,27 +12,32 @@
 - 운영 배포 시나리오: `docs/production-deployment.md`
 - 호스팅 방식 비교(통합 vs 분리/CDN): `docs/hosting-tradeoffs.md`
 
-## 앱 구성
+## 앱 구성 (Babylon / Three.js 동일 구조)
 
-- `apps/3d-widget` (기본 포트 5174)
-  - Babylon.js 위젯
-  - `src/embed.ts` 에 `mountBabylon(canvas)` 를 export
-- `apps/web-host` (기본 포트 5173)
-  - 호스트 웹앱
-  - `3d-widget`의 `src/embed.ts`(DEV) 또는 `embed.js`(PROD)를 import 해서 캔버스에 mount
-- `apps/combined-app` (기본 포트 6100)
-  - 로딩타임 비교용 “결합 앱”(원격 import 없이 로컬 import로 위젯 실행)
+**Babylon.js** (`apps/babylon/`)
+
+- `apps/babylon/3d-widget` (기본 포트 5174) — Babylon.js 위젯, `mountBabylon(canvas)` export
+- `apps/babylon/web-host` (기본 포트 5173) — 호스트 웹앱, 원격 위젯 import
+- `apps/babylon/combined-app` (기본 포트 6100) — 로컬 import 결합 앱(로딩타임 비교용)
+
+**Three.js** (`apps/three/`)
+
+- `apps/three/3d-widget` (기본 포트 5176) — Three.js 위젯, 동일 API `mountBabylon(canvas)` export
+- `apps/three/web-host` (기본 포트 5175) — 호스트 웹앱
+- `apps/three/combined-app` (기본 포트 6101) — 로컬 import 결합 앱
 
 ## 실행
 
 ```bash
 npm install
+# Babylon (기본)
 npm run dev
+# Three.js
+npm run dev:three
 ```
 
-- Host: `http://localhost:5173`
-- Widget(standalone): `http://localhost:5174`
-- Combined: `http://localhost:6100`
+- **Babylon** Host: `http://localhost:5173`, Widget: `http://localhost:5174`, Combined: `http://localhost:6100`
+- **Three.js** Host: `http://localhost:5175`, Widget: `http://localhost:5176`, Combined: `http://localhost:6101`
 
 ## 포트/호스트/위젯 주소를 쉽게 바꾸는 법(중요)
 
@@ -40,5 +45,5 @@ npm run dev
 
 ## 포인트
 
-- 개발 중 임베드: `apps/web-host`에서 원격 `import("http://<WIDGET_HOST>:5174/src/embed.ts")`
-- CORS: `apps/3d-widget/vite.config.ts` 에서 `server.cors = true`
+- 개발 중 임베드: web-host에서 원격 `import("http://<WIDGET_HOST>:5174|5176/src/embed.ts")` (Babylon 5174, Three 5176)
+- CORS: 각 3d-widget의 `vite.config.ts` 에서 `server.cors = true`

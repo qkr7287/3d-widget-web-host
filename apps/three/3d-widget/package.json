@@ -1,0 +1,22 @@
+{
+  "name": "@apps/three-3d-widget",
+  "private": true,
+  "version": "0.0.0",
+  "exports": { "./embed": "./src/embed.ts" },
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "convert-model": "gltf-transform metalrough asset/free_cyberpunk_hovercar.glb asset/free_cyberpunk_hovercar.glb"
+  },
+  "devDependencies": {
+    "@gltf-transform/cli": "^4.3.0",
+    "@types/three": "^0.169.0",
+    "typescript": "~5.9.3",
+    "vite": "^7.2.4"
+  },
+  "dependencies": {
+    "three": "^0.170.0"
+  }
+}

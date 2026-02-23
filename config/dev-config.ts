@@ -22,12 +22,16 @@ function parseDevServerHost(): true | string {
  */
 export const DEV_SERVER_HOST: true | string = parseDevServerHost();
 
-/** 각 앱 dev 서버 포트 */
+/** 각 앱 dev 서버 포트 (Babylon) */
 export const PORT_WEB_HOST = Number(process.env.PORT_WEB_HOST) || 5173;
 export const PORT_3D_WIDGET = Number(process.env.PORT_3D_WIDGET) || 5174;
-
 // NOTE: 6000은 Chromium(Chrome/Edge)에서 ERR_UNSAFE_PORT로 차단되는 경우가 있어 6100 권장
 export const PORT_COMBINED_APP = Number(process.env.PORT_COMBINED_APP) || 6100;
+
+/** 각 앱 dev 서버 포트 (Three.js) */
+export const PORT_WEB_HOST_THREE = Number(process.env.PORT_WEB_HOST_THREE) || 5175;
+export const PORT_3D_WIDGET_THREE = Number(process.env.PORT_3D_WIDGET_THREE) || 5176;
+export const PORT_COMBINED_APP_THREE = Number(process.env.PORT_COMBINED_APP_THREE) || 6101;
 
 /**
  * web-host가 3d-widget을 가져올 때 사용할 기본 주소 구성요소
