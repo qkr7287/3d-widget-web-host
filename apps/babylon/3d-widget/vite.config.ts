@@ -7,7 +7,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   server: {
-    // 기본값: LAN(다른 기기)에서 http://192.168.x.x:5174 로 접속 가능
+    // 기본값: LAN(다른 기기)에서 http://192.168.x.x:5101 로 접속 가능
     host: DEV_SERVER_HOST,
     port: PORT_3D_WIDGET,
     strictPort: true,

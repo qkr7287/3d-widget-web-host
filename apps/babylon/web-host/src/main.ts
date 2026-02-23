@@ -10,7 +10,7 @@ type RemoteWidgetModule = {
  */
 const WIDGET_PROTOCOL = __WIDGET_PROTOCOL__ || "http";
 const WIDGET_HOST = __WIDGET_HOST__ || window.location.hostname || "localhost";
-const WIDGET_PORT = Number(__WIDGET_PORT__ || 5174);
+const WIDGET_PORT = Number(__WIDGET_PORT__ || 5101);
 
 const DEFAULT_DEV_EMBED_URL = `${WIDGET_PROTOCOL}://${WIDGET_HOST}:${WIDGET_PORT}/src/embed.ts`;
 const DEFAULT_PROD_EMBED_URL = `${WIDGET_PROTOCOL}://${WIDGET_HOST}:${WIDGET_PORT}/embed.js`;
@@ -131,7 +131,7 @@ async function connectOnce() {
 }
 
 async function connectWithRetry() {
-  // 동시에 두 dev 서버를 띄우면 host가 먼저 올라오면서 5174가 아직 준비 전인 경우가 있어 재시도
+  // 동시에 두 dev 서버를 띄우면 host가 먼저 올라오면서 widget이 아직 준비 전인 경우가 있어 재시도
   const delays = [0, 400, 800, 1400];
   for (let i = 0; i < delays.length; i += 1) {
     if (controller) return;

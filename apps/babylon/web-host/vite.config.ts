@@ -3,7 +3,7 @@ import { DEV_SERVER_HOST, PORT_WEB_HOST, WIDGET_EMBED_URL_OVERRIDE, WIDGET_HOST,
 
 export default defineConfig(({ mode }) => ({
   server: {
-    // 기본값: LAN(다른 기기)에서 http://192.168.x.x:5173 로 접속 가능
+    // 기본값: LAN(다른 기기)에서 http://192.168.x.x:5100 로 접속 가능
     host: DEV_SERVER_HOST,
     port: PORT_WEB_HOST,
     strictPort: true,
